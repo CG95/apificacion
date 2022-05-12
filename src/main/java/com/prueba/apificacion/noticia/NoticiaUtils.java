@@ -1,7 +1,19 @@
 package com.prueba.apificacion.noticia;
 
 import com.google.gson.stream.JsonToken;
+import com.prueba.apificacion.db.ApiKeyDTO;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -71,4 +83,65 @@ public class NoticiaUtils {
         return fechaISO;
 
     }
+
+    public static String hmacEncode(String algoritmo, String data, String key)
+            throws NoSuchAlgorithmException, InvalidKeyException {
+        SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(), algoritmo);
+        Mac mac = Mac.getInstance(algoritmo);
+        mac.init(secretKeySpec);
+        return Hex.encodeHexString(mac.doFinal(data.getBytes()));
+    }
+
+    public static boolean assertEquals(ApiKeyDTO apiKeyStored, String apikeyRequest){
+        String apikeyRequestSigned = "";
+        boolean passwordIsEqual = false;
+        try {
+            apikeyRequestSigned = hmacEncode("HmacSHA256",apikeyRequest,"admin");
+            System.out.println("apikeyRequestSigned="+apikeyRequestSigned);
+            System.out.println("apikeyStored="+apiKeyStored.getPassword());
+            passwordIsEqual= apiKeyStored.getPassword().equalsIgnoreCase(apikeyRequestSigned);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        }
+        return passwordIsEqual;
+    }
+
+    public static String getBase64EncodedImage(String imageURL){
+        java.net.URL url = null;
+        String imagenCodificadaBase64  = "";
+        try {
+            url = new java.net.URL(imageURL);
+            InputStream is = url.openStream();
+            byte[] bytes = org.apache.commons.io.IOUtils.toByteArray(is);
+            imagenCodificadaBase64 = Base64.encodeBase64String(bytes);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }catch (Exception e){
+            throw new CustomInternalServerErrorException("");
+        }
+
+        return imagenCodificadaBase64;
+    }
+
+    public static String getImageContentType(String imageURL){
+        URL url = null;
+        String contentType = "";
+        try {
+            url = new URL(imageURL);
+            URLConnection conn = url.openConnection();
+            contentType = conn.getContentType();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e){
+            throw new CustomInternalServerErrorException("");
+        }
+        return contentType;
+    }
+
 }

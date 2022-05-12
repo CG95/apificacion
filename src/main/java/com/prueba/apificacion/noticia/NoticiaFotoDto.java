@@ -1,16 +1,20 @@
 package com.prueba.apificacion.noticia;
 
-public class NoticiaDto {
-    private String fecha;
-    private String enlace;
-    private String enlaceFoto;
-    private String titulo;
-    private String resumen;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-    public NoticiaDto() {
+public class NoticiaFotoDto {
+    private String fecha="";
+    private String enlace="";
+    private String enlaceFoto="";
+    private String titulo="";
+    private String resumen="";
+    private String contenidoFoto="";
+    private String contentTypeFoto="";
+
+    public NoticiaFotoDto() {
     }
 
-    public NoticiaDto(String fecha, String enlace, String enlaceFoto, String titulo, String resumen) {
+    public NoticiaFotoDto(String fecha, String enlace, String enlaceFoto, String titulo, String resumen) {
         this.fecha = fecha;
         this.enlace = enlace;
         this.enlaceFoto = enlaceFoto;
@@ -34,6 +38,7 @@ public class NoticiaDto {
         this.enlace = enlace;
     }
 
+    @JsonProperty("enlace_foto")
     public String getEnlaceFoto() {
         return enlaceFoto;
     }
@@ -58,6 +63,23 @@ public class NoticiaDto {
         this.resumen = resumen;
     }
 
+    @JsonProperty("contenido_foto")
+    public String getContenidoFoto() {
+        return contenidoFoto;
+    }
+
+    public void setContenidoFoto(String contenidoFoto) {
+        this.contenidoFoto = contenidoFoto;
+    }
+
+    @JsonProperty("content_type_foto")
+    public String getContentTypeFoto() {
+        return contentTypeFoto;
+    }
+
+    public void setContentTypeFoto(String contentTypeFoto) {
+        this.contentTypeFoto = contentTypeFoto;
+    }
 
     @Override
     public String toString() {
@@ -66,6 +88,9 @@ public class NoticiaDto {
                 ", enlace='" + enlace + '\'' +
                 ", enlaceFoto='" + enlaceFoto + '\'' +
                 ", titulo='" + titulo + '\'' +
-                ", resumen='" + resumen + '}';
+                ", resumen='" + resumen + '\'' +
+                ", contenidoFoto='" + contenidoFoto + '\'' +
+                ", contentTypeFoto='" + contentTypeFoto + '\'' +
+                '}';
     }
 }

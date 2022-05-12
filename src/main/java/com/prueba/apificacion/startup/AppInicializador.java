@@ -2,6 +2,8 @@ package com.prueba.apificacion.startup;
 
 import com.microsoft.playwright.options.LoadState;
 
+import com.prueba.apificacion.db.ApiKeyDTO;
+import com.prueba.apificacion.db.ApiKeyRepository;
 import com.prueba.apificacion.noticia.NoticiaDto;
 import com.prueba.apificacion.noticia.NoticiaUtils;
 import org.jsoup.Jsoup;
@@ -10,91 +12,47 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 import com.microsoft.playwright.*;
+
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import org.apache.commons.codec.binary.Hex;
 
 
 @Component
 public class AppInicializador {
+    @Autowired
+    private ApiKeyRepository apiKeyRepository;
 
     @PostConstruct
     private void init() {
         System.out.println("Inicializando app!!!!!!!!!!!!!!!!!!!");
-        /*
-        NoticiaDto noticia = new NoticiaDto();
-        try (Playwright playwright = Playwright.create()) {
-            final BrowserType chromium = playwright.chromium();
-            final Browser browser = chromium.launch();
-            final Page page = browser.newPage();
-            page.navigate("https://www.abc.com.py/buscar/"+"naturaleza");
-            page.waitForLoadState(LoadState.NETWORKIDLE);
-            final ElementHandle contentElement = page.querySelector("[class=article-list-wrapper]");
-            //System.out.println(page.innerHTML("body"));
-            Document docPrueba = null;
-            docPrueba = Jsoup.parse(contentElement.innerHTML());
-            Elements articulos = docPrueba.select("div.item-article");
-            String enlaceFoto="";
-            String enlace="";
-            String titulo="";
-            String resumen="";
-            String fecha="";
-            for (Element articulo: articulos) {
-                //obtener enlace de foto de noticia
-                if(articulo.selectFirst("div.article-photo").selectFirst("img")!=null) {
-                    enlaceFoto = articulo.selectFirst("div.article-photo").selectFirst("img").attr("src");
-                    noticia.setEnlaceFoto(enlaceFoto);
-                }
-                else {
-                    System.out.println("no tiene atributo definido de img");
-                }
-                //obtener titulo noticia
-                if(articulo.selectFirst("div.article-info").selectFirst("div.article-title")!=null) {
-                    titulo = articulo.selectFirst("div.article-info").selectFirst("div.article-title").selectFirst("span").text();
-                    noticia.setTitulo(titulo);
-                }
-                else {
-                    System.out.println("no tiene definido titulo");
-                }
-
-                //obtener enlace noticia
-                if(articulo.selectFirst("div.article-info").selectFirst("a")!=null) {
-                    enlace = articulo.selectFirst("div.article-info").selectFirst("a").attr("href");
-                    noticia.setEnlace(enlace);
-                }
-                else {
-                    System.out.println("no tiene definido enlace");
-                }
-
-                //obtener texto de resumen de noticia
-                if(articulo.selectFirst("div.article-info").selectFirst("div.article-intro")!=null) {
-                    resumen = articulo.selectFirst("div.article-info").selectFirst("div.article-intro").selectFirst("p").text();
-                    noticia.setResumen(resumen);
-                }
-                else {
-                    System.out.println("no tiene definido resumen");
-                }
-
-                //obtener fecha de noticia
-                if(articulo.selectFirst("div.article-info").selectFirst("div.article-time")!=null) {
-                    fecha = articulo.selectFirst("div.article-info").selectFirst("div.article-time").selectFirst("span").text();
-                    System.out.println(fecha);
-                    noticia.setFecha(NoticiaUtils.getFechaIso(fecha));
-                }else {
-                    System.out.println("no tiene definida fecha.Estableciendo fecha default");
-
-                }
-                System.out.println(noticia.toString());
-
-
-            }
-
-            browser.close();
-        } catch (Exception e) {
+        String signedPassword="";
+        try {
+            signedPassword = NoticiaUtils.hmacEncode("HmacSHA256","user:abc123","admin");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
             e.printStackTrace();
         }
-            */
+        ApiKeyDTO apikeyDTO= new ApiKeyDTO();
+        apikeyDTO.setApiName("Consultas Abc");
+        apikeyDTO.setHashType("HmacSHA256");
+        apikeyDTO.setPassword(signedPassword);
+        ApiKeyDTO apiKeyDTONew = apiKeyRepository.save(apikeyDTO);
+        System.out.println(apiKeyDTONew.toString());
+
+
+
     }
+
+
+
 }
